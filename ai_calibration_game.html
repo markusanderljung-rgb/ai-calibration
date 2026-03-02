@@ -4,26 +4,27 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>AI Calibration Training</title>
+<link href="https://fonts.googleapis.com/css2?family=Quattrocento+Sans:wght@400;700&family=Quattrocento:wght@400;700&display=swap" rel="stylesheet">
 <style>
   :root {
-    --bg: #0f1117;
-    --surface: #1a1d27;
-    --surface2: #242734;
-    --border: #2e3144;
-    --text: #e1e4ed;
-    --text-dim: #8b8fa3;
-    --accent: #6c7ee1;
-    --accent-light: #8b9bf0;
-    --green: #4ade80;
-    --red: #f87171;
-    --orange: #fbbf24;
-    --blue: #60a5fa;
+    --bg: #ffffff;
+    --surface: #f8f8f8;
+    --surface2: #f0f0f0;
+    --border: #ddd;
+    --text: #3e3e3e;
+    --text-dim: #888;
+    --accent: #333;
+    --accent-light: #555;
+    --green: #2e7d32;
+    --red: #c62828;
+    --orange: #e65100;
+    --blue: #1565c0;
   }
 
   * { margin: 0; padding: 0; box-sizing: border-box; }
 
   body {
-    font-family: 'Inter', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+    font-family: 'Quattrocento Sans', 'Inter', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
     background: var(--bg);
     color: var(--text);
     min-height: 100vh;
@@ -44,12 +45,11 @@
   }
 
   header h1 {
+    font-family: 'Quattrocento', serif;
     font-size: 28px;
     font-weight: 700;
     margin-bottom: 8px;
-    background: linear-gradient(135deg, var(--accent-light), var(--blue));
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
+    color: #000;
   }
 
   header p {
@@ -124,12 +124,12 @@
   }
 
   .btn-primary {
-    background: var(--accent);
+    background: #333;
     color: #fff;
   }
 
   .btn-primary:hover {
-    background: var(--accent-light);
+    background: #555;
     transform: translateY(-1px);
   }
 
@@ -154,7 +154,7 @@
 
   .progress-bar {
     height: 100%;
-    background: linear-gradient(90deg, var(--accent), var(--blue));
+    background: #333;
     border-radius: 3px;
     transition: width 0.4s ease;
   }
@@ -272,15 +272,15 @@
   }
 
   .scale-log {
-    background: rgba(251, 191, 36, 0.15);
+    background: rgba(230, 81, 0, 0.1);
     color: var(--orange);
-    border: 1px solid rgba(251, 191, 36, 0.3);
+    border: 1px solid rgba(230, 81, 0, 0.3);
   }
 
   .scale-linear {
-    background: rgba(96, 165, 250, 0.15);
+    background: rgba(21, 101, 192, 0.1);
     color: var(--blue);
-    border: 1px solid rgba(96, 165, 250, 0.3);
+    border: 1px solid rgba(21, 101, 192, 0.3);
   }
 
   .submit-row {
@@ -332,13 +332,13 @@
   }
 
   .feedback-icon.hit {
-    background: rgba(74, 222, 128, 0.15);
-    border: 1px solid rgba(74, 222, 128, 0.3);
+    background: rgba(46, 125, 50, 0.1);
+    border: 1px solid rgba(46, 125, 50, 0.3);
   }
 
   .feedback-icon.miss {
-    background: rgba(248, 113, 113, 0.15);
-    border: 1px solid rgba(248, 113, 113, 0.3);
+    background: rgba(198, 40, 40, 0.1);
+    border: 1px solid rgba(198, 40, 40, 0.3);
   }
 
   .feedback-text h3 {
@@ -511,12 +511,12 @@
   }
 
   .history-indicator.hit {
-    background: rgba(74, 222, 128, 0.15);
+    background: rgba(46, 125, 50, 0.1);
     color: var(--green);
   }
 
   .history-indicator.miss {
-    background: rgba(248, 113, 113, 0.15);
+    background: rgba(198, 40, 40, 0.1);
     color: var(--red);
   }
 
@@ -562,7 +562,7 @@
   .interval-bar-container {
     position: relative;
     height: 40px;
-    background: rgba(255,255,255,0.03);
+    background: rgba(0,0,0,0.03);
     border-radius: 6px;
     margin: 8px 0;
     overflow: visible;
@@ -571,8 +571,8 @@
   .interval-bar {
     position: absolute;
     height: 100%;
-    background: rgba(108, 126, 225, 0.25);
-    border: 1px solid rgba(108, 126, 225, 0.5);
+    background: rgba(51, 51, 51, 0.12);
+    border: 1px solid rgba(51, 51, 51, 0.3);
     border-radius: 6px;
     transition: all 0.3s ease;
   }
@@ -626,7 +626,7 @@
     bottom: 125%;
     left: 50%;
     transform: translateX(-50%);
-    box-shadow: 0 4px 20px rgba(0,0,0,0.4);
+    box-shadow: 0 4px 20px rgba(0,0,0,0.12);
   }
 
   .tooltip:hover .tooltip-text {
@@ -677,7 +677,7 @@
   }
 
   .leaderboard-table tr.current-game {
-    background: rgba(108, 126, 225, 0.1);
+    background: rgba(51, 51, 51, 0.06);
   }
 
   .leaderboard-table tr.current-game td {
@@ -690,9 +690,9 @@
     width: 40px;
   }
 
-  .leaderboard-rank.gold { color: #fbbf24; }
-  .leaderboard-rank.silver { color: #94a3b8; }
-  .leaderboard-rank.bronze { color: #d97706; }
+  .leaderboard-rank.gold { color: #b8860b; }
+  .leaderboard-rank.silver { color: #6b7280; }
+  .leaderboard-rank.bronze { color: #92400e; }
 
   .leaderboard-name {
     max-width: 200px;
@@ -1622,7 +1622,7 @@ function renderCalibrationChart(results) {
   });
 
   // Draw axes
-  ctx.strokeStyle = '#2e3144';
+  ctx.strokeStyle = '#ddd';
   ctx.lineWidth = 1;
   ctx.beginPath();
   ctx.moveTo(pad.left, pad.top);
@@ -1631,13 +1631,13 @@ function renderCalibrationChart(results) {
   ctx.stroke();
 
   // Y-axis labels
-  ctx.fillStyle = '#8b8fa3';
+  ctx.fillStyle = '#888';
   ctx.font = '11px Inter, system-ui';
   ctx.textAlign = 'right';
   for (let i = 0; i <= 100; i += 25) {
     const y = pad.top + chartH * (1 - i / 100);
     ctx.fillText(i + '%', pad.left - 8, y + 4);
-    ctx.strokeStyle = '#1a1d27';
+    ctx.strokeStyle = '#eee';
     ctx.beginPath();
     ctx.moveTo(pad.left, y);
     ctx.lineTo(W - pad.right, y);
@@ -1647,14 +1647,14 @@ function renderCalibrationChart(results) {
   // Draw target line
   const targetRate = CI_CONFIG[gameState.confidenceLevel].target;
   const targetY = pad.top + chartH * (1 - targetRate);
-  ctx.strokeStyle = 'rgba(108, 126, 225, 0.5)';
+  ctx.strokeStyle = 'rgba(51, 51, 51, 0.4)';
   ctx.setLineDash([4, 4]);
   ctx.beginPath();
   ctx.moveTo(pad.left, targetY);
   ctx.lineTo(W - pad.right, targetY);
   ctx.stroke();
   ctx.setLineDash([]);
-  ctx.fillStyle = '#6c7ee1';
+  ctx.fillStyle = '#555';
   ctx.textAlign = 'left';
   ctx.fillText(`${gameState.confidenceLevel}% target`, W - pad.right - 70, targetY - 5);
 
@@ -1668,20 +1668,20 @@ function renderCalibrationChart(results) {
     // Bar color based on calibration quality
     const diff = Math.abs(cat.hitRate - targetRate);
     let color;
-    if (diff <= 0.1) color = 'rgba(74, 222, 128, 0.6)';
-    else if (diff <= 0.2) color = 'rgba(251, 191, 36, 0.6)';
-    else color = 'rgba(248, 113, 113, 0.6)';
+    if (diff <= 0.1) color = 'rgba(46, 125, 50, 0.5)';
+    else if (diff <= 0.2) color = 'rgba(230, 81, 0, 0.5)';
+    else color = 'rgba(198, 40, 40, 0.5)';
 
     ctx.fillStyle = color;
     ctx.fillRect(x, y, barW, barH);
 
     // Border
-    ctx.strokeStyle = color.replace('0.6', '1');
+    ctx.strokeStyle = color.replace('0.5', '0.8');
     ctx.lineWidth = 1;
     ctx.strokeRect(x, y, barW, barH);
 
     // Value on top
-    ctx.fillStyle = '#e1e4ed';
+    ctx.fillStyle = '#3e3e3e';
     ctx.font = 'bold 11px Inter, system-ui';
     ctx.textAlign = 'center';
     ctx.fillText((cat.hitRate * 100).toFixed(0) + '%', x + barW / 2, y - 5);
@@ -1695,7 +1695,7 @@ function renderCalibrationChart(results) {
       'Training Costs': 'Costs',
       'Trends': 'Trends'
     };
-    ctx.fillStyle = '#8b8fa3';
+    ctx.fillStyle = '#888';
     ctx.font = '10px Inter, system-ui';
     ctx.save();
     ctx.translate(x + barW / 2, H - pad.bottom + 10);
