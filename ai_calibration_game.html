@@ -1,0 +1,1880 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI Calibration Training</title>
+<style>
+  :root {
+    --bg: #0f1117;
+    --surface: #1a1d27;
+    --surface2: #242734;
+    --border: #2e3144;
+    --text: #e1e4ed;
+    --text-dim: #8b8fa3;
+    --accent: #6c7ee1;
+    --accent-light: #8b9bf0;
+    --green: #4ade80;
+    --red: #f87171;
+    --orange: #fbbf24;
+    --blue: #60a5fa;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    line-height: 1.5;
+  }
+
+  .container {
+    max-width: 860px;
+    margin: 0 auto;
+    padding: 24px;
+  }
+
+  header {
+    text-align: center;
+    padding: 32px 0 24px;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 24px;
+  }
+
+  header h1 {
+    font-size: 28px;
+    font-weight: 700;
+    margin-bottom: 8px;
+    background: linear-gradient(135deg, var(--accent-light), var(--blue));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+
+  header p {
+    color: var(--text-dim);
+    font-size: 15px;
+    max-width: 600px;
+    margin: 0 auto;
+  }
+
+  /* Screens */
+  .screen { display: none; }
+  .screen.active { display: block; }
+
+  /* Start screen */
+  .start-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 32px;
+    margin-bottom: 20px;
+  }
+
+  .start-card h2 {
+    font-size: 20px;
+    margin-bottom: 16px;
+  }
+
+  .start-card p, .start-card li {
+    color: var(--text-dim);
+    font-size: 14px;
+    margin-bottom: 8px;
+  }
+
+  .start-card ul {
+    padding-left: 20px;
+    margin-bottom: 16px;
+  }
+
+  .settings-row {
+    display: flex;
+    gap: 16px;
+    align-items: center;
+    margin-top: 20px;
+    flex-wrap: wrap;
+  }
+
+  .settings-row label {
+    font-size: 14px;
+    color: var(--text-dim);
+  }
+
+  .settings-row select {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    color: var(--text);
+    padding: 8px 12px;
+    border-radius: 8px;
+    font-size: 14px;
+  }
+
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 28px;
+    border-radius: 10px;
+    border: none;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+
+  .btn-primary {
+    background: var(--accent);
+    color: #fff;
+  }
+
+  .btn-primary:hover {
+    background: var(--accent-light);
+    transform: translateY(-1px);
+  }
+
+  .btn-secondary {
+    background: var(--surface2);
+    color: var(--text);
+    border: 1px solid var(--border);
+  }
+
+  .btn-secondary:hover {
+    background: var(--border);
+  }
+
+  /* Game screen */
+  .progress-bar-container {
+    background: var(--surface2);
+    height: 6px;
+    border-radius: 3px;
+    margin-bottom: 24px;
+    overflow: hidden;
+  }
+
+  .progress-bar {
+    height: 100%;
+    background: linear-gradient(90deg, var(--accent), var(--blue));
+    border-radius: 3px;
+    transition: width 0.4s ease;
+  }
+
+  .question-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 16px;
+  }
+
+  .question-number {
+    font-size: 13px;
+    color: var(--text-dim);
+    font-weight: 500;
+  }
+
+  .category-badge {
+    display: inline-block;
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 600;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    color: var(--accent-light);
+  }
+
+  .question-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 28px;
+    margin-bottom: 20px;
+  }
+
+  .question-text {
+    font-size: 18px;
+    font-weight: 600;
+    margin-bottom: 8px;
+    line-height: 1.4;
+  }
+
+  .question-meta {
+    font-size: 13px;
+    color: var(--text-dim);
+    margin-bottom: 24px;
+  }
+
+  .input-section {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  .interval-row {
+    display: flex;
+    gap: 16px;
+    align-items: flex-end;
+  }
+
+  .input-group {
+    flex: 1;
+  }
+
+  .input-group label {
+    display: block;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text-dim);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 6px;
+  }
+
+  .input-group input {
+    width: 100%;
+    padding: 12px 14px;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    color: var(--text);
+    font-size: 16px;
+    font-family: 'SF Mono', 'Fira Code', monospace;
+    transition: border-color 0.15s;
+  }
+
+  .input-group input:focus {
+    outline: none;
+    border-color: var(--accent);
+  }
+
+  .input-group input::placeholder {
+    color: var(--text-dim);
+    opacity: 0.5;
+  }
+
+  .input-hint {
+    font-size: 12px;
+    color: var(--text-dim);
+    margin-top: 4px;
+  }
+
+  .scale-indicator {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 10px;
+    border-radius: 6px;
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 16px;
+  }
+
+  .scale-log {
+    background: rgba(251, 191, 36, 0.15);
+    color: var(--orange);
+    border: 1px solid rgba(251, 191, 36, 0.3);
+  }
+
+  .scale-linear {
+    background: rgba(96, 165, 250, 0.15);
+    color: var(--blue);
+    border: 1px solid rgba(96, 165, 250, 0.3);
+  }
+
+  .submit-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 8px;
+  }
+
+  .running-score {
+    font-size: 13px;
+    color: var(--text-dim);
+  }
+
+  .running-score span {
+    font-weight: 700;
+    color: var(--text);
+    font-family: 'SF Mono', 'Fira Code', monospace;
+  }
+
+  /* Feedback */
+  .feedback-card {
+    background: var(--surface);
+    border-radius: 12px;
+    padding: 24px;
+    margin-bottom: 20px;
+    border: 1px solid var(--border);
+    display: none;
+  }
+
+  .feedback-card.show { display: block; }
+
+  .feedback-result {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 16px;
+  }
+
+  .feedback-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 20px;
+    flex-shrink: 0;
+  }
+
+  .feedback-icon.hit {
+    background: rgba(74, 222, 128, 0.15);
+    border: 1px solid rgba(74, 222, 128, 0.3);
+  }
+
+  .feedback-icon.miss {
+    background: rgba(248, 113, 113, 0.15);
+    border: 1px solid rgba(248, 113, 113, 0.3);
+  }
+
+  .feedback-text h3 {
+    font-size: 16px;
+    margin-bottom: 2px;
+  }
+
+  .feedback-text p {
+    font-size: 13px;
+    color: var(--text-dim);
+  }
+
+  .feedback-details {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 12px;
+    margin-bottom: 16px;
+  }
+
+  .detail-box {
+    background: var(--surface2);
+    border-radius: 8px;
+    padding: 12px;
+    text-align: center;
+  }
+
+  .detail-box .label {
+    font-size: 11px;
+    color: var(--text-dim);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 4px;
+  }
+
+  .detail-box .value {
+    font-size: 16px;
+    font-weight: 700;
+    font-family: 'SF Mono', 'Fira Code', monospace;
+  }
+
+  .detail-box .value.good { color: var(--green); }
+  .detail-box .value.bad { color: var(--red); }
+  .detail-box .value.neutral { color: var(--blue); }
+
+  .explanation {
+    font-size: 13px;
+    color: var(--text-dim);
+    padding: 12px;
+    background: var(--surface2);
+    border-radius: 8px;
+    border-left: 3px solid var(--accent);
+  }
+
+  .explanation strong {
+    color: var(--text);
+  }
+
+  /* Results screen */
+  .results-header {
+    text-align: center;
+    padding: 32px 0;
+  }
+
+  .results-header h2 {
+    font-size: 24px;
+    margin-bottom: 8px;
+  }
+
+  .final-score-display {
+    font-size: 64px;
+    font-weight: 800;
+    font-family: 'SF Mono', 'Fira Code', monospace;
+    margin: 16px 0;
+  }
+
+  .score-label {
+    font-size: 14px;
+    color: var(--text-dim);
+    margin-bottom: 24px;
+  }
+
+  .stats-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 12px;
+    margin-bottom: 32px;
+  }
+
+  .stat-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 16px;
+    text-align: center;
+  }
+
+  .stat-card .stat-value {
+    font-size: 24px;
+    font-weight: 700;
+    font-family: 'SF Mono', 'Fira Code', monospace;
+    margin-bottom: 4px;
+  }
+
+  .stat-card .stat-label {
+    font-size: 12px;
+    color: var(--text-dim);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  .calibration-section {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 24px;
+    margin-bottom: 24px;
+  }
+
+  .calibration-section h3 {
+    font-size: 16px;
+    margin-bottom: 16px;
+  }
+
+  .calibration-chart {
+    position: relative;
+    height: 240px;
+    margin-bottom: 12px;
+  }
+
+  .calibration-chart canvas {
+    width: 100%;
+    height: 100%;
+  }
+
+  .question-history {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 24px;
+    margin-bottom: 24px;
+  }
+
+  .question-history h3 {
+    font-size: 16px;
+    margin-bottom: 16px;
+  }
+
+  .history-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 12px 0;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .history-item:last-child {
+    border-bottom: none;
+  }
+
+  .history-indicator {
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    flex-shrink: 0;
+    margin-top: 2px;
+  }
+
+  .history-indicator.hit {
+    background: rgba(74, 222, 128, 0.15);
+    color: var(--green);
+  }
+
+  .history-indicator.miss {
+    background: rgba(248, 113, 113, 0.15);
+    color: var(--red);
+  }
+
+  .history-content {
+    flex: 1;
+    min-width: 0;
+  }
+
+  .history-question {
+    font-size: 13px;
+    font-weight: 500;
+    margin-bottom: 4px;
+  }
+
+  .history-details {
+    font-size: 12px;
+    color: var(--text-dim);
+    font-family: 'SF Mono', 'Fira Code', monospace;
+  }
+
+  .history-score {
+    font-size: 14px;
+    font-weight: 700;
+    font-family: 'SF Mono', 'Fira Code', monospace;
+    flex-shrink: 0;
+  }
+
+  .btn-row {
+    display: flex;
+    gap: 12px;
+    justify-content: center;
+    margin-top: 24px;
+  }
+
+  /* Visual interval display */
+  .interval-visual {
+    margin: 16px 0;
+    padding: 16px;
+    background: var(--surface2);
+    border-radius: 8px;
+  }
+
+  .interval-bar-container {
+    position: relative;
+    height: 40px;
+    background: rgba(255,255,255,0.03);
+    border-radius: 6px;
+    margin: 8px 0;
+    overflow: visible;
+  }
+
+  .interval-bar {
+    position: absolute;
+    height: 100%;
+    background: rgba(108, 126, 225, 0.25);
+    border: 1px solid rgba(108, 126, 225, 0.5);
+    border-radius: 6px;
+    transition: all 0.3s ease;
+  }
+
+  .true-value-marker {
+    position: absolute;
+    top: -4px;
+    bottom: -4px;
+    width: 3px;
+    border-radius: 2px;
+    transform: translateX(-50%);
+    z-index: 2;
+  }
+
+  .true-value-marker.hit { background: var(--green); }
+  .true-value-marker.miss { background: var(--red); }
+
+  .interval-labels {
+    display: flex;
+    justify-content: space-between;
+    font-size: 11px;
+    color: var(--text-dim);
+    font-family: 'SF Mono', 'Fira Code', monospace;
+  }
+
+  /* Scoring explanation tooltip */
+  .scoring-info {
+    cursor: help;
+    text-decoration: underline dotted;
+    text-underline-offset: 3px;
+  }
+
+  .tooltip {
+    position: relative;
+    display: inline-block;
+  }
+
+  .tooltip .tooltip-text {
+    visibility: hidden;
+    width: 320px;
+    background: var(--surface);
+    color: var(--text-dim);
+    font-size: 12px;
+    line-height: 1.5;
+    text-align: left;
+    border-radius: 8px;
+    padding: 12px;
+    border: 1px solid var(--border);
+    position: absolute;
+    z-index: 10;
+    bottom: 125%;
+    left: 50%;
+    transform: translateX(-50%);
+    box-shadow: 0 4px 20px rgba(0,0,0,0.4);
+  }
+
+  .tooltip:hover .tooltip-text {
+    visibility: visible;
+  }
+
+  /* Leaderboard */
+  .leaderboard-section {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 24px;
+    margin-bottom: 24px;
+  }
+
+  .leaderboard-section h3 {
+    font-size: 16px;
+    margin-bottom: 16px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .leaderboard-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+  }
+
+  .leaderboard-table th {
+    text-align: left;
+    padding: 8px 12px;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: var(--text-dim);
+    border-bottom: 1px solid var(--border);
+    font-weight: 600;
+  }
+
+  .leaderboard-table td {
+    padding: 10px 12px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .leaderboard-table tr:last-child td {
+    border-bottom: none;
+  }
+
+  .leaderboard-table tr.current-game {
+    background: rgba(108, 126, 225, 0.1);
+  }
+
+  .leaderboard-table tr.current-game td {
+    font-weight: 600;
+  }
+
+  .leaderboard-rank {
+    font-weight: 700;
+    font-family: 'SF Mono', 'Fira Code', monospace;
+    width: 40px;
+  }
+
+  .leaderboard-rank.gold { color: #fbbf24; }
+  .leaderboard-rank.silver { color: #94a3b8; }
+  .leaderboard-rank.bronze { color: #d97706; }
+
+  .leaderboard-name {
+    max-width: 200px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .leaderboard-score {
+    font-family: 'SF Mono', 'Fira Code', monospace;
+    font-weight: 600;
+  }
+
+  .leaderboard-empty {
+    text-align: center;
+    color: var(--text-dim);
+    padding: 24px;
+    font-size: 14px;
+  }
+
+  .name-input-row {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 16px;
+    align-items: center;
+  }
+
+  .name-input-row input {
+    flex: 1;
+    max-width: 240px;
+    padding: 8px 12px;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    color: var(--text);
+    font-size: 14px;
+  }
+
+  .name-input-row input:focus {
+    outline: none;
+    border-color: var(--accent);
+  }
+
+  .btn-small {
+    padding: 8px 16px;
+    font-size: 13px;
+  }
+
+  .btn-text {
+    background: transparent;
+    border: none;
+    color: var(--text-dim);
+    cursor: pointer;
+    font-size: 12px;
+    padding: 4px 8px;
+  }
+
+  .btn-text:hover {
+    color: var(--red);
+  }
+
+  /* Hit rate callout */
+  .hitrate-callout {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 20px 28px;
+    text-align: center;
+    margin-bottom: 32px;
+  }
+
+  .hitrate-callout .hitrate-value {
+    font-size: 36px;
+    font-weight: 800;
+    font-family: 'SF Mono', 'Fira Code', monospace;
+    margin-bottom: 4px;
+  }
+
+  .hitrate-callout .hitrate-label {
+    font-size: 13px;
+    color: var(--text-dim);
+    margin-bottom: 2px;
+  }
+
+  .hitrate-callout .hitrate-detail {
+    font-size: 11px;
+    color: var(--text-dim);
+  }
+
+  /* Responsive */
+  @media (max-width: 600px) {
+    .container { padding: 16px; }
+    .interval-row { flex-direction: column; }
+    .stats-grid { grid-template-columns: repeat(2, 1fr); }
+    .feedback-details { grid-template-columns: 1fr; }
+    header h1 { font-size: 22px; }
+    .question-text { font-size: 16px; }
+    .hitrate-callout { padding: 16px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="container">
+  <header>
+    <h1>AI Calibration Training</h1>
+    <p id="header-subtitle">Test your knowledge of AI facts while practicing calibrated uncertainty. Give <span class="ci-label">90%</span> confidence intervals &mdash; aim for accuracy <em>and</em> precision.</p>
+  </header>
+
+  <!-- START SCREEN -->
+  <div id="start-screen" class="screen active">
+    <div class="start-card">
+      <h2>How it works</h2>
+      <ul>
+        <li>You'll be asked questions about AI &mdash; compute, dates, benchmarks, costs, and more.</li>
+        <li>For each question, provide a <strong><span class="ci-label">90%</span> confidence interval</strong>: a range where you believe there's a <span class="ci-label">90%</span> chance the true answer falls.</li>
+        <li>You're scored on both <strong>calibration</strong> (did ~<span class="ci-label">90%</span> of your intervals contain the truth?) and <strong>precision</strong> (how narrow were your intervals?).</li>
+        <li>Wider intervals are safer but score lower. The best strategy is tight intervals that still capture the truth ~<span class="ci-label">90%</span> of the time.</li>
+      </ul>
+      <p><strong>Scoring:</strong> Each question is scored 0&ndash;100. You get a base score for capturing the true value, with a bonus for tighter intervals. Missing the interval incurs a penalty proportional to how far off you were. Your final score is the average across all questions.</p>
+    </div>
+
+    <div class="start-card">
+      <h2>Settings</h2>
+      <div class="settings-row">
+        <label for="num-questions">Questions:</label>
+        <select id="num-questions">
+          <option value="10">10 (Quick)</option>
+          <option value="20" selected>20 (Standard)</option>
+          <option value="40">40 (Full)</option>
+          <option value="100">100 (All)</option>
+        </select>
+        <label for="category-filter">Category:</label>
+        <select id="category-filter">
+          <option value="all">All Categories</option>
+          <option value="Training Compute">Training Compute</option>
+          <option value="Release Dates">Release Dates</option>
+          <option value="Company Financials">Company Financials</option>
+          <option value="AI Chip Market">AI Chip Market</option>
+          <option value="Training Costs">Training Costs</option>
+          <option value="Trends">Trends</option>
+        </select>
+        <label for="confidence-level">Confidence:</label>
+        <select id="confidence-level" onchange="updateCIDisplay()">
+          <option value="90" selected>90% CI</option>
+          <option value="80">80% CI</option>
+          <option value="50">50% CI</option>
+        </select>
+      </div>
+      <div style="margin-top: 20px;">
+        <button class="btn btn-primary" onclick="startGame()">Start Game</button>
+      </div>
+    </div>
+
+    <div class="leaderboard-section" id="start-leaderboard">
+      <h3>Leaderboard</h3>
+      <div id="start-leaderboard-body"></div>
+    </div>
+  </div>
+
+  <!-- GAME SCREEN -->
+  <div id="game-screen" class="screen">
+    <div class="progress-bar-container">
+      <div class="progress-bar" id="progress-bar"></div>
+    </div>
+
+    <div class="question-header">
+      <span class="question-number" id="question-number"></span>
+      <span class="category-badge" id="category-badge"></span>
+    </div>
+
+    <div class="question-card">
+      <div class="question-text" id="question-text"></div>
+      <div class="question-meta" id="question-meta"></div>
+
+      <div id="scale-indicator" class="scale-indicator"></div>
+
+      <div class="input-section">
+        <div class="interval-row">
+          <div class="input-group">
+            <label id="lower-label">Lower bound (5th percentile)</label>
+            <input type="text" id="lower-input" placeholder="e.g. 1e23 or 2023.5" autocomplete="off">
+          </div>
+          <div class="input-group">
+            <label id="upper-label">Upper bound (95th percentile)</label>
+            <input type="text" id="upper-input" placeholder="e.g. 1e25 or 2024.1" autocomplete="off">
+          </div>
+        </div>
+        <div class="input-hint" id="input-hint"></div>
+        <div class="submit-row">
+          <div class="running-score" id="running-score"></div>
+          <button class="btn btn-primary" id="submit-btn" onclick="submitAnswer()">Submit</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="feedback-card" id="feedback-card">
+      <div class="feedback-result" id="feedback-result"></div>
+      <div class="feedback-details" id="feedback-details"></div>
+      <div class="interval-visual" id="interval-visual"></div>
+      <div class="explanation" id="feedback-explanation"></div>
+      <div style="margin-top: 16px; text-align: right;">
+        <button class="btn btn-primary" id="next-btn" onclick="nextQuestion()">Next Question</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- RESULTS SCREEN -->
+  <div id="results-screen" class="screen">
+    <div class="results-header">
+      <h2>Game Complete</h2>
+      <div class="final-score-display" id="final-score"></div>
+      <div class="score-label">Overall Score &mdash; combines calibration &amp; precision (0&ndash;100)</div>
+    </div>
+
+    <div class="hitrate-callout" id="hitrate-callout"></div>
+
+    <div class="stats-grid" id="stats-grid"></div>
+
+    <div class="calibration-section">
+      <h3>Calibration Analysis</h3>
+      <p id="calibration-description" style="font-size:13px; color:var(--text-dim); margin-bottom:16px;"></p>
+      <div class="calibration-chart">
+        <canvas id="calibration-canvas"></canvas>
+      </div>
+      <div id="calibration-summary" style="font-size:13px; color:var(--text-dim); margin-top: 8px;"></div>
+    </div>
+
+    <div class="question-history">
+      <h3>Question Review</h3>
+      <div id="history-list"></div>
+    </div>
+
+    <div class="leaderboard-section" id="results-leaderboard">
+      <h3>
+        Leaderboard
+        <button class="btn-text" onclick="clearLeaderboard()">Clear All</button>
+      </h3>
+      <div class="name-input-row">
+        <input type="text" id="player-name" placeholder="Enter your name" maxlength="30">
+        <button class="btn btn-primary btn-small" id="save-score-btn" onclick="saveScore()">Save Score</button>
+      </div>
+      <div id="leaderboard-body"></div>
+    </div>
+
+    <div class="btn-row">
+      <button class="btn btn-primary" onclick="restartGame()">Play Again</button>
+      <button class="btn btn-secondary" onclick="showStart()">Change Settings</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ===== QUESTION DATABASE =====
+const ALL_QUESTIONS = [
+  {id:1,category:"Training Compute",question:"How many FLOP were used to train GPT-3 (175B parameters)?",answer:3.14e23,unit:"FLOP",scale:"log",source:"OpenAI paper / Epoch AI",year:2020,explanation:"GPT-3 was trained on 300B tokens with 175B parameters. The original paper reports ~3.14e23 FLOP."},
+  {id:2,category:"Training Compute",question:"How many FLOP were used to train Chinchilla (70B parameters)?",answer:5.76e23,unit:"FLOP",scale:"log",source:"DeepMind Chinchilla paper / Epoch AI",year:2022,explanation:"Chinchilla used ~5.76e23 FLOP, roughly 2x GPT-3, but with only 70B params trained on 1.4T tokens."},
+  {id:3,category:"Training Compute",question:"How many FLOP were used to train PaLM (540B parameters)?",answer:2.56e24,unit:"FLOP",scale:"log",source:"Google PaLM paper / Epoch AI",year:2022,explanation:"PaLM 540B required ~2.56e24 FLOP, about 10x GPT-3. Trained on 780B tokens using 6144 TPU v4 chips."},
+  {id:4,category:"Training Compute",question:"How many FLOP were used to train GPT-4?",answer:2.15e25,unit:"FLOP",scale:"log",source:"Epoch AI estimate",year:2023,explanation:"Epoch AI places GPT-4 at ~2e25 FLOP. It was the first model to cross the 1e25 FLOP threshold (the EU AI Act regulatory threshold)."},
+  {id:5,category:"Training Compute",question:"How many FLOP were used to train Gemini Ultra?",answer:5e25,unit:"FLOP",scale:"log",source:"Epoch AI estimate",year:2023,explanation:"Epoch AI estimates Gemini Ultra at ~5e25 FLOP, roughly 2-3x the compute of GPT-4."},
+  {id:6,category:"Training Compute",question:"How many FLOP were used to train Llama 2 70B?",answer:8.3e23,unit:"FLOP",scale:"log",source:"Meta Llama 2 paper",year:2023,explanation:"Llama 2 70B was trained on 2T tokens. Using 6*N*D: 6 * 70e9 * 2e12 = ~8.4e23 FLOP."},
+  {id:7,category:"Training Compute",question:"How many FLOP were used to train Llama 3 (405B)?",answer:3.8e25,unit:"FLOP",scale:"log",source:"Meta Llama 3 paper",year:2024,explanation:"Meta reported Llama 3 405B used ~3.8e25 FLOP, about 50x more than Llama 2."},
+  {id:8,category:"Training Compute",question:"How many FLOP were used to train AlphaGo Zero?",answer:3e23,unit:"FLOP",scale:"log",source:"Epoch AI / OpenAI AI and Compute",year:2017,explanation:"AlphaGo Zero used ~3e23 FLOP, one of the first models to exceed 1e23 FLOP."},
+  {id:9,category:"Training Compute",question:"How many FLOP were used to train Grok-3?",answer:1e26,unit:"FLOP",scale:"log",source:"Epoch AI / xAI",year:2025,explanation:"Grok-3 was the first model estimated to exceed 1e26 FLOP, trained on xAI's 100,000 H100 GPU Colossus cluster."},
+  {id:10,category:"Training Compute",question:"How many FLOP were used to train AlexNet?",answer:1.1e17,unit:"FLOP",scale:"log",source:"Epoch AI",year:2012,explanation:"AlexNet had ~62M parameters, trained on ImageNet with 2 GTX 580 GPUs. ~1e17 FLOP total."},
+  {id:11,category:"Release Dates",question:"In what year (fractional) was GPT-2 first released by OpenAI?",answer:2019.12,unit:"year",scale:"linear",source:"OpenAI",year:2019,explanation:"GPT-2 was partially released on February 14, 2019 (2019.12). Full 1.5B model released November 2019."},
+  {id:12,category:"Release Dates",question:"In what year (fractional) was GPT-3 announced?",answer:2020.41,unit:"year",scale:"linear",source:"OpenAI",year:2020,explanation:"The GPT-3 paper was released on arXiv on May 28, 2020 (~2020.41), with API access opening in June 2020."},
+  {id:13,category:"Release Dates",question:"In what year (fractional) was GPT-4 released?",answer:2023.21,unit:"year",scale:"linear",source:"OpenAI",year:2023,explanation:"GPT-4 was released on March 14, 2023 (~2023.21)."},
+  {id:14,category:"Release Dates",question:"In what year (fractional) was ChatGPT first launched?",answer:2022.91,unit:"year",scale:"linear",source:"OpenAI",year:2022,explanation:"ChatGPT launched on November 30, 2022 (~2022.91). Fastest app to 100M users."},
+  {id:15,category:"Release Dates",question:"In what year (fractional) did AlphaGo defeat Lee Sedol?",answer:2016.19,unit:"year",scale:"linear",source:"DeepMind",year:2016,explanation:"AlphaGo defeated Lee Sedol 4-1 in March 2016 (~2016.19) in Seoul."},
+  {id:16,category:"Release Dates",question:"In what year (fractional) was AlphaFold 2 published in Nature?",answer:2021.54,unit:"year",scale:"linear",source:"Nature / DeepMind",year:2021,explanation:"AlphaFold 2 was published in Nature on July 15, 2021 (~2021.54)."},
+  {id:17,category:"Release Dates",question:"In what year (fractional) was the Transformer paper published?",answer:2017.46,unit:"year",scale:"linear",source:"Google Brain / arXiv",year:2017,explanation:"'Attention Is All You Need' was published on arXiv June 12, 2017 (~2017.46)."},
+  {id:18,category:"Release Dates",question:"In what year (fractional) was Claude 3 Opus released?",answer:2024.17,unit:"year",scale:"linear",source:"Anthropic",year:2024,explanation:"Claude 3 Opus was released on March 4, 2024 (~2024.17)."},
+  {id:19,category:"Release Dates",question:"In what year (fractional) was Gemini 1.0 Ultra announced?",answer:2023.93,unit:"year",scale:"linear",source:"Google DeepMind",year:2023,explanation:"Gemini 1.0 announced December 6, 2023 (~2023.93). Publicly available February 2024."},
+  {id:28,category:"Company Financials",question:"What was OpenAI's annual revenue in 2024 (USD)?",answer:3.7e9,unit:"USD",scale:"log",source:"CNBC / financial reports",year:2024,explanation:"OpenAI generated ~$3.7B in revenue in 2024, with a loss of ~$5B."},
+  {id:29,category:"Company Financials",question:"What was OpenAI's valuation after its Oct 2024 round (USD)?",answer:1.57e11,unit:"USD",scale:"log",source:"Bloomberg / CNBC",year:2024,explanation:"OpenAI raised $6.6B in October 2024 at a $157B valuation, the largest VC round at the time."},
+  {id:30,category:"Company Financials",question:"What was Anthropic's valuation after its Sep 2025 Series F (USD)?",answer:1.83e11,unit:"USD",scale:"log",source:"Goldman Sachs / Anthropic",year:2025,explanation:"Anthropic raised $13B in September 2025 at a $183B valuation."},
+  {id:31,category:"Company Financials",question:"What was Anthropic's annualized revenue at end of 2024 (USD)?",answer:1e9,unit:"USD",scale:"log",source:"Sacra / financial reports",year:2024,explanation:"Anthropic's annualized revenue run-rate reached ~$1B by end of 2024, growing to >$5B by August 2025."},
+  {id:32,category:"Company Financials",question:"How much total funding had Anthropic raised through Sep 2025 (USD)?",answer:3.73e10,unit:"USD",scale:"log",source:"Tracxn / Anthropic",year:2025,explanation:"Through its Series F, Anthropic had raised ~$37.3B over 16 funding rounds."},
+  {id:33,category:"Company Financials",question:"How much did OpenAI raise in its March 2025 round (USD)?",answer:4e10,unit:"USD",scale:"log",source:"CNBC / financial reports",year:2025,explanation:"OpenAI closed a $40B round in March 2025, the largest private tech deal on record."},
+  {id:34,category:"AI Chip Market",question:"What was Nvidia's total revenue for FY2025 (ending Jan 2025, USD)?",answer:1.305e11,unit:"USD",scale:"log",source:"Nvidia FY2025 earnings",year:2025,explanation:"Nvidia reported $130.5B total revenue for FY2025, up 114% YoY."},
+  {id:35,category:"AI Chip Market",question:"What was Nvidia's data center revenue for FY2025 (USD)?",answer:1.152e11,unit:"USD",scale:"log",source:"Nvidia FY2025 earnings",year:2025,explanation:"Nvidia's data center revenue was $115.2B, 88% of total revenue, growing >200% YoY."},
+  {id:36,category:"AI Chip Market",question:"What was the approximate price of a single Nvidia H100 80GB GPU in 2024 (USD)?",answer:30000,unit:"USD",scale:"log",source:"Hardware retailers",year:2024,explanation:"The H100 80GB ranged from $25K-$40K, typically around $30K."},
+  {id:37,category:"AI Chip Market",question:"What was Nvidia's peak market cap in 2024 (USD)?",answer:3.4e12,unit:"USD",scale:"log",source:"CNBC / market data",year:2024,explanation:"Nvidia's market cap peaked at ~$3.4T in late 2024."},
+  {id:38,category:"AI Chip Market",question:"How many H100-equivalent GPUs did Google have by late 2024?",answer:1000000,unit:"GPUs",scale:"log",source:"Industry estimates",year:2024,explanation:"Google had ~1M H100-equivalent compute units (~400K Nvidia GPUs + ~600K TPU equivalents)."},
+  {id:39,category:"Training Costs",question:"What was the estimated cost to train GPT-3 (USD)?",answer:4.6e6,unit:"USD",scale:"log",source:"Lambda Labs / estimates",year:2020,explanation:"Training GPT-3 cost ~$4.6M in cloud compute. Estimates ranged $2M-$10M."},
+  {id:40,category:"Training Costs",question:"What was the estimated cost to train GPT-4 (USD)?",answer:7.8e7,unit:"USD",scale:"log",source:"Epoch AI / Stanford AI Index",year:2023,explanation:"Epoch AI estimated GPT-4's training cost at $41-78M for compute. Sam Altman cited 'more than $100M' including all costs."},
+  {id:41,category:"Training Costs",question:"What was the estimated total cost to develop Gemini Ultra (USD)?",answer:1.91e8,unit:"USD",scale:"log",source:"Stanford AI Index 2024",year:2023,explanation:"Stanford estimated Gemini Ultra cost $191M to develop (compute + R&D staff)."},
+  {id:42,category:"Training Costs",question:"What was the estimated cost to train Llama 2 70B (USD)?",answer:1.7e6,unit:"USD",scale:"log",source:"Meta / cloud cost estimates",year:2023,explanation:"Llama 2 70B cost ~$1.7M, using 2,048 A100 GPUs for 23 days."},
+  {id:43,category:"Training Costs",question:"What was the estimated cost to train Grok-3 (USD)?",answer:3e9,unit:"USD",scale:"log",source:"xAI / estimates",year:2025,explanation:"Grok-3 training estimated at $3-4B including the Colossus infrastructure."},
+  {id:44,category:"Training Costs",question:"What was the estimated cost to train the original 2017 Transformer (USD)?",answer:900,unit:"USD",scale:"log",source:"Stanford AI Index",year:2017,explanation:"The original Transformer cost ~$670-$900 to train."},
+  {id:45,category:"Trends",question:"What was total global private AI investment in 2024 (USD)?",answer:1.1e11,unit:"USD",scale:"log",source:"Stanford AI Index 2025",year:2024,explanation:"Global private AI investment exceeded $100-114B in 2024, up >80% from $55.6B in 2023."},
+  {id:46,category:"Trends",question:"How many AI-related publications were there globally in 2023?",answer:242000,unit:"publications",scale:"log",source:"Stanford HAI AI Index 2025",year:2023,explanation:"Total AI publications reached ~242,000 in 2023, nearly tripling from ~102,000 in 2013."},
+  {id:47,category:"Trends",question:"How many days did it take ChatGPT to reach 100M monthly active users?",answer:60,unit:"days",scale:"linear",source:"UBS report / news",year:2023,explanation:"ChatGPT reached 100M MAU in ~60 days (2 months), the fastest-growing consumer app in history at the time."},
+  {id:48,category:"Trends",question:"How many weekly active users did ChatGPT have in December 2024?",answer:3e8,unit:"users",scale:"log",source:"OpenAI / Sam Altman",year:2024,explanation:"ChatGPT had ~300M weekly active users as of December 2024, sending >1B messages daily."},
+  {id:49,category:"Trends",question:"What % of global VC funding went to AI companies in 2024?",answer:34,unit:"%",scale:"linear",source:"Crunchbase",year:2024,explanation:"AI companies captured ~33-37% of all global VC funding in 2024, up from 26% in 2023."},
+  {id:50,category:"Trends",question:"What was the approximate annual growth rate of frontier training compute since 2020 (multiplier per year)?",answer:5,unit:"x/year",scale:"linear",source:"Epoch AI",year:2024,explanation:"Frontier training compute has grown ~5x/year since 2020, a doubling time of ~6 months."},
+  {id:51,category:"Trends",question:"How many notable AI models exceeded 1e25 FLOP as of mid-2025?",answer:33,unit:"models",scale:"linear",source:"Epoch AI",year:2025,explanation:"Over 30 (specifically 33) publicly announced models from 12 developers exceeded 1e25 FLOP by mid-2025."},
+  {id:52,category:"Company Financials",question:"How much did Alphabet plan to spend on CapEx in 2025 (USD)?",answer:7.5e10,unit:"USD",scale:"log",source:"Alphabet Q4 2024 earnings",year:2025,explanation:"Alphabet planned ~$75B in CapEx for 2025, more than double the prior year, for AI infrastructure."},
+  {id:53,category:"Company Financials",question:"What was U.S. private AI investment in 2024 (USD)?",answer:1.09e11,unit:"USD",scale:"log",source:"Stanford HAI AI Index 2025",year:2024,explanation:"U.S. private AI investment was $109.1B in 2024, nearly 12x China's $9.3B."},
+  {id:54,category:"Training Compute",question:"How many parameters does GPT-3 have?",answer:1.75e11,unit:"parameters",scale:"log",source:"OpenAI GPT-3 paper",year:2020,explanation:"GPT-3 has 175B parameters, 100x more than GPT-2's 1.5B."},
+  {id:55,category:"Training Compute",question:"How many total parameters does GPT-4 reportedly have (all MoE experts)?",answer:1.8e12,unit:"parameters",scale:"log",source:"Leaked architecture details",year:2023,explanation:"GPT-4 reportedly has ~1.8T total parameters across 16 experts of ~111B each, with 2 experts active per forward pass."},
+  {id:56,category:"AI Chip Market",question:"How many H100-equivalent GPUs were produced in 2024?",answer:5000000,unit:"GPUs",scale:"log",source:"Industry estimates",year:2024,explanation:"~5M Hopper-class GPUs estimated produced in 2024, derived from Nvidia data center revenue / avg revenue per GPU."},
+  {id:57,category:"Trends",question:"How many foundation models were released in 2023?",answer:149,unit:"models",scale:"linear",source:"Stanford HAI AI Index 2024",year:2023,explanation:"149 foundation models were released in 2023, more than double 2022. 65.7% were open-source."},
+  {id:58,category:"Trends",question:"What was global generative AI private investment in 2024 (USD)?",answer:3.39e10,unit:"USD",scale:"log",source:"Stanford HAI AI Index 2025",year:2024,explanation:"Private generative AI investment reached $33.9B in 2024, up 18.7% from 2023, over 8.5x 2022 levels."},
+  {id:59,category:"Training Costs",question:"What was the estimated cost to train PaLM 540B (USD)?",answer:1.24e7,unit:"USD",scale:"log",source:"Stanford AI Index / estimates",year:2022,explanation:"PaLM 540B cost ~$12.4M to train on 6,144 TPU v4 chips for >1,200 hours."},
+  // === LLM Adoption & Usage (Epoch AI, "The Changing Drivers of LLM Adoption") ===
+  {id:61,category:"Trends",question:"How many weekly active users did ChatGPT have in December 2025?",answer:9e8,unit:"users",scale:"log",source:"Epoch AI / OpenAI",year:2025,explanation:"ChatGPT reached nearly 900 million weekly active users by December 2025, more than tripling from under 400 million in January 2025."},
+  {id:62,category:"Company Financials",question:"What was OpenAI's annualized revenue at the end of 2025 (USD)?",answer:2.1e10,unit:"USD",scale:"log",source:"Epoch AI / financial reports",year:2025,explanation:"OpenAI's annualized revenue reached ~$21 billion by end of 2025, roughly 5.7x its ~$3.7B in 2024."},
+  {id:63,category:"Trends",question:"How many times was the ChatGPT app downloaded between Oct 2024 and Sep 2025?",answer:1.9e9,unit:"downloads",scale:"log",source:"Epoch AI / app analytics",year:2025,explanation:"The ChatGPT app was downloaded 1.9 billion times in the year from October 2024 to September 2025."},
+  {id:64,category:"Trends",question:"How many paying consumer subscribers did ChatGPT have in July 2025?",answer:3.5e7,unit:"subscribers",scale:"log",source:"Epoch AI / OpenAI",year:2025,explanation:"ChatGPT had 35 million consumer subscribers by July 2025, generating at least $8.4B in annualized subscription revenue."},
+  {id:65,category:"Trends",question:"What percentage of internet users in high-income countries used ChatGPT weekly by mid-2025?",answer:30,unit:"%",scale:"linear",source:"Epoch AI",year:2025,explanation:"By mid-2025, approximately 30% of internet users in high-income countries were using ChatGPT weekly."},
+  {id:66,category:"Trends",question:"What percentage of US registered voters reported using ChatGPT in the past week (Nov 2025)?",answer:35,unit:"%",scale:"linear",source:"Epoch AI / polling data",year:2025,explanation:"In November 2025 polling, 35% of US registered voters reported using ChatGPT in the past week, while 24% reported using Gemini."},
+  {id:67,category:"Trends",question:"How many new users was ChatGPT adding per month in the first half of 2025?",answer:5e7,unit:"users/month",scale:"log",source:"Epoch AI",year:2025,explanation:"ChatGPT was adding approximately 50 million new users per month during the first half of 2025."},
+  {id:68,category:"Trends",question:"What percentage of Americans aged 65+ reported using AI services in the past week (Nov 2025)?",answer:34,unit:"%",scale:"linear",source:"Epoch AI / polling data",year:2025,explanation:"34% of Americans aged 65+ reported past-week AI use in November 2025, comparable to internet adoption rates for the same age group in 2007 (~35%)."},
+  {id:69,category:"Trends",question:"What percentage of office workers reported using AI for work tasks in late 2025?",answer:34.6,unit:"%",scale:"linear",source:"Epoch AI / polling data",year:2025,explanation:"34.6% of office job workers used AI for work tasks, compared to 25.8% of manual, non-customer-facing workers."},
+  {id:70,category:"Trends",question:"How many monthly active users did Meta AI reportedly have by late 2025?",answer:1e9,unit:"users",scale:"log",source:"Epoch AI / Meta",year:2025,explanation:"Meta AI reportedly reached ~1 billion monthly active users by late 2025, integrated across Meta's family of apps (WhatsApp, Instagram, etc.)."},
+  // === Additional recent AI facts ===
+  {id:71,category:"Training Costs",question:"What was the estimated compute cost to train DeepSeek-V3 (USD)?",answer:5.6e6,unit:"USD",scale:"log",source:"DeepSeek technical report",year:2024,explanation:"DeepSeek-V3 cost only ~$5.6M in compute to train (2.788M H800 GPU hours), dramatically cheaper than comparable frontier models."},
+  {id:74,category:"Company Financials",question:"How much did Microsoft plan to spend on AI infrastructure CapEx in FY2025 (USD)?",answer:8e10,unit:"USD",scale:"log",source:"Microsoft earnings / CNBC",year:2025,explanation:"Microsoft planned ~$80B in capital expenditures for AI infrastructure in fiscal year 2025."},
+  {id:75,category:"Trends",question:"By what factor did India's ChatGPT daily users grow over 2024-2025?",answer:7,unit:"x",scale:"linear",source:"Epoch AI",year:2025,explanation:"India's ChatGPT daily users grew by 7x over the year, one of the fastest-growing markets for AI adoption globally."},
+  // === China's Compute & AI Ecosystem ===
+  {id:76,category:"Trends",question:"What percentage of global AI supercomputer performance is located in China (2025)?",answer:15,unit:"%",scale:"linear",source:"Epoch AI / US Federal Reserve",year:2025,explanation:"China holds approximately 15% of global AI supercomputer performance, while the US holds about 75%, giving the US roughly a 5:1 advantage."},
+  {id:77,category:"AI Chip Market",question:"Roughly how many Nvidia H20 GPUs did China's top 3 tech companies (ByteDance, Alibaba, Tencent) stockpile before the April 2025 export ban?",answer:1.5e6,unit:"GPUs",scale:"log",source:"Nikkei Asia / Tom's Hardware",year:2025,explanation:"ByteDance, Alibaba, and Tencent accumulated roughly 1.3-1.6 million Nvidia H20 GPUs before the April 2025 export ban, spending approximately $16 billion."},
+  {id:78,category:"Trends",question:"What was China's AI GPU self-sufficiency rate in 2024?",answer:34,unit:"%",scale:"linear",source:"Morgan Stanley",year:2024,explanation:"China's AI GPU self-sufficiency rate rose from below 10% in 2020 to about 34% in 2024, projected to reach 82% by 2027."},
+  {id:79,category:"Trends",question:"What percentage of all global AI patent filings came from China in 2024?",answer:60,unit:"%",scale:"linear",source:"WIPO / Global Times",year:2024,explanation:"China accounts for approximately 60% of all global AI patents, though only 7% were filed overseas and US patents receive significantly more citations globally."},
+  {id:80,category:"Company Financials",question:"What was China's private AI investment in 2024 (USD)?",answer:9.3e9,unit:"USD",scale:"log",source:"Stanford HAI AI Index 2025",year:2024,explanation:"China's private AI investment was $9.3 billion in 2024, compared to $109.1 billion in the US — a roughly 12:1 ratio."},
+  // === EU & UK AI Company Valuations ===
+  {id:81,category:"Company Financials",question:"What was Mistral AI's valuation after its September 2025 Series C (USD)?",answer:1.37e10,unit:"USD",scale:"log",source:"CNBC / Mistral AI",year:2025,explanation:"Mistral AI was valued at ~$13.7B after raising EUR 1.7B in its Series C — the largest venture round ever raised by a European AI company."},
+  {id:82,category:"Company Financials",question:"What was ASML's approximate market capitalization in early 2026 (USD)?",answer:5.7e11,unit:"USD",scale:"log",source:"Market data",year:2026,explanation:"ASML, the Dutch semiconductor lithography monopoly critical to advanced chip manufacturing, had a market cap of approximately $570 billion in early 2026."},
+  {id:83,category:"Company Financials",question:"What was ARM Holdings' approximate market capitalization in early 2026 (USD)?",answer:1.3e11,unit:"USD",scale:"log",source:"Market data",year:2026,explanation:"ARM Holdings, the UK-based chip architecture company whose designs underpin most AI accelerators and smartphones, had a market cap of ~$130 billion in early 2026."},
+  {id:84,category:"Company Financials",question:"What was Helsing's valuation in 2025 (USD)?",answer:5.37e9,unit:"USD",scale:"log",source:"Tech.eu",year:2025,explanation:"Helsing, the German defense AI company, was valued at ~$5.37 billion in 2025, making it one of Europe's most valuable AI startups."},
+  // === AI Token Production ===
+  {id:85,category:"Trends",question:"How many tokens per day was OpenAI's API processing in mid-2025?",answer:8.6e12,unit:"tokens/day",scale:"log",source:"OpenAI DevDay 2025",year:2025,explanation:"OpenAI's API was processing approximately 6 billion tokens per minute (~8.6 trillion tokens per day) as of mid-2025."},
+  {id:86,category:"Trends",question:"Approximately how many tokens per day were AI systems globally producing by late 2025?",answer:1e14,unit:"tokens/day",scale:"log",source:"Industry analysis / Tomasz Tunguz",year:2025,explanation:"Global AI token production reached approximately 88-100+ trillion tokens per day by late 2025, combining Google (~33T/day), OpenAI (~10-20T/day), Microsoft, and others."},
+  {id:87,category:"Trends",question:"How many messages per day were users sending to ChatGPT in June 2025?",answer:2.6e9,unit:"messages/day",scale:"log",source:"Epoch AI",year:2025,explanation:"ChatGPT processed approximately 2.6 billion messages per day in June 2025, up from 451 million a year earlier — about 5.8x growth."},
+  {id:88,category:"Trends",question:"How many tokens per day was Google processing across its AI services in mid-2025?",answer:3.27e13,unit:"tokens/day",scale:"log",source:"Alphabet earnings",year:2025,explanation:"Google processed ~980 trillion tokens per month (~32.7 trillion tokens per day) across its AI services by mid-2025."},
+  // === Human Internet Content ===
+  {id:89,category:"Trends",question:"What is the estimated total stock of quality human-generated public text on the internet (in tokens)?",answer:3e14,unit:"tokens",scale:"log",source:"Epoch AI",year:2024,explanation:"Epoch AI estimates the effective stock of quality, repetition-adjusted human-generated public text at approximately 300 trillion tokens (90% CI: 100T to 1,000T)."},
+  {id:90,category:"Trends",question:"Approximately how many words do all humans collectively generate per day?",answer:1e14,unit:"words/day",scale:"log",source:"Sam Altman estimate",year:2024,explanation:"Sam Altman estimated in February 2024 that all humans generate about 100 trillion words per day. At that time, OpenAI was generating about 100 billion words per day — roughly 0.1% of human output."},
+  {id:91,category:"Trends",question:"What percentage of new web articles were generated primarily by AI as of November 2024?",answer:50.3,unit:"%",scale:"linear",source:"Graphite",year:2024,explanation:"50.3% of new web articles were generated primarily by AI as of November 2024, up from ~5% before ChatGPT. However, 86% of articles ranking in Google Search were still human-written."},
+  // === Additional AI Facts ===
+  {id:92,category:"Trends",question:"By what factor have LLM inference costs declined annually since 2022?",answer:10,unit:"x/year",scale:"linear",source:"Industry analysis",year:2025,explanation:"LLM inference costs have declined ~10x per year since 2022. GPT-4-equivalent performance now costs ~$0.40 per million tokens versus ~$20 in late 2022."},
+  {id:93,category:"Company Financials",question:"What was Anthropic's annualized revenue run rate in early 2026 (USD)?",answer:1.4e10,unit:"USD",scale:"log",source:"Financial reports / Epoch AI",year:2026,explanation:"Anthropic reached ~$14 billion in annualized revenue by early 2026, with roughly 10x annual growth. Claude Code alone reached $1B ARR within 6 months of launch."},
+  {id:94,category:"Trends",question:"What percentage of US electricity was consumed by data centers in 2024?",answer:4,unit:"%",scale:"linear",source:"Pew Research / IEA",year:2024,explanation:"US data centers consumed ~183 TWh in 2024, over 4% of US electricity, expected to reach 6% by 2026."},
+  {id:95,category:"Company Financials",question:"What was the total financial commitment for the Stargate AI infrastructure project (USD)?",answer:5e11,unit:"USD",scale:"log",source:"OpenAI / White House",year:2025,explanation:"The Stargate project, announced January 2025, committed $500 billion over 4 years for AI infrastructure, with SoftBank and OpenAI each holding 40%."},
+  {id:96,category:"Trends",question:"What percentage of enterprises globally had adopted AI by 2025?",answer:72,unit:"%",scale:"linear",source:"McKinsey Global Survey 2025",year:2025,explanation:"Enterprise AI adoption reached 72% globally in 2025, up from 20% in 2017, driven by generative AI tools."},
+  {id:97,category:"Training Compute",question:"What is the estimated training compute for Grok 4 (FLOP)?",answer:5e26,unit:"FLOP",scale:"log",source:"Epoch AI / xAI",year:2025,explanation:"Grok 4 is estimated at ~5e26 FLOP, roughly 5x the compute of Grok 3 and the largest known training run as of mid-2025."},
+  {id:98,category:"Trends",question:"What percentage of Ireland's electricity was consumed by data centers in 2024?",answer:21,unit:"%",scale:"linear",source:"IEA",year:2024,explanation:"Ireland's data centers consumed 21% of the country's electricity in 2024, potentially rising to 32% by 2026 — the highest national share of any country."},
+  {id:99,category:"Company Financials",question:"What annualized revenue did Claude Code reach within 6 months of its launch (USD)?",answer:1e9,unit:"USD",scale:"log",source:"Financial reports",year:2025,explanation:"Claude Code reached $1 billion in annualized revenue within just 6 months of launch, making it one of the fastest enterprise developer products to reach that milestone."},
+  {id:100,category:"Trends",question:"How much total AI infrastructure investment has been planned worldwide as of early 2026 (USD)?",answer:2e12,unit:"USD",scale:"log",source:"HSBC / Futurum",year:2026,explanation:"Over $2 trillion in AI infrastructure has been planned worldwide, with the five largest US cloud/AI providers alone committing $660-690 billion in capex for 2026."},
+  // === AI History Dates ===
+  {id:101,category:"Release Dates",question:"In what year (fractional) was OpenAI founded?",answer:2015.93,unit:"year",scale:"linear",source:"OpenAI",year:2015,explanation:"OpenAI was founded on December 11, 2015 (~2015.93) by Sam Altman, Elon Musk, Greg Brockman, Ilya Sutskever, and others with a $1B pledge."},
+  {id:102,category:"Release Dates",question:"In what year (fractional) was Anthropic founded?",answer:2021.08,unit:"year",scale:"linear",source:"Anthropic",year:2021,explanation:"Anthropic was founded in January 2021 (~2021.08) by Dario and Daniela Amodei, along with several former OpenAI employees."},
+  {id:103,category:"Release Dates",question:"In what year (fractional) was Google DeepMind formed (merger of Google Brain and DeepMind)?",answer:2023.29,unit:"year",scale:"linear",source:"Google DeepMind",year:2023,explanation:"Google merged its Google Brain and DeepMind teams into Google DeepMind in April 2023 (~2023.29), led by Demis Hassabis."},
+  {id:104,category:"Release Dates",question:"In what year (fractional) was Sam Altman briefly fired as OpenAI CEO?",answer:2023.88,unit:"year",scale:"linear",source:"Multiple news sources",year:2023,explanation:"Sam Altman was fired by OpenAI's board on November 17, 2023 (~2023.88) and reinstated just 5 days later on November 22."},
+  {id:105,category:"Release Dates",question:"In what year (fractional) was the original DeepMind founded?",answer:2010.71,unit:"year",scale:"linear",source:"DeepMind",year:2010,explanation:"DeepMind was founded in September 2010 (~2010.71) in London by Demis Hassabis, Shane Legg, and Mustafa Suleyman. Acquired by Google in 2014."},
+  {id:106,category:"Release Dates",question:"In what year (fractional) was the ImageNet challenge won by AlexNet?",answer:2012.75,unit:"year",scale:"linear",source:"ILSVRC / academic record",year:2012,explanation:"AlexNet won the ImageNet challenge in September 2012 (~2012.75), reducing the top-5 error rate from 26% to 15.3%, widely seen as the start of the deep learning revolution."},
+  {id:107,category:"Release Dates",question:"In what year (fractional) was the EU AI Act formally adopted?",answer:2024.37,unit:"year",scale:"linear",source:"Council of the EU",year:2024,explanation:"The EU AI Act was formally adopted by the Council of the EU on May 21, 2024 (~2024.37), becoming the world's first comprehensive AI regulation."},
+  {id:108,category:"Release Dates",question:"In what year (fractional) was the Biden Executive Order on AI signed?",answer:2023.83,unit:"year",scale:"linear",source:"White House",year:2023,explanation:"President Biden signed Executive Order 14110 on the Safe, Secure, and Trustworthy Development of AI on October 30, 2023 (~2023.83)."}
+];
+
+// ===== GAME STATE =====
+const CI_CONFIG = {
+  50:  { label: '50%', lower: '25th', upper: '75th', target: 0.50, wRefScale: 0.41 },
+  80:  { label: '80%', lower: '10th', upper: '90th', target: 0.80, wRefScale: 0.779 },
+  90:  { label: '90%', lower: '5th',  upper: '95th', target: 0.90, wRefScale: 1.0 }
+};
+
+let gameState = {
+  questions: [],
+  currentIndex: 0,
+  results: [],
+  showingFeedback: false,
+  confidenceLevel: 90
+};
+
+// ===== CI DISPLAY =====
+
+function updateCIDisplay() {
+  const ci = parseInt(document.getElementById('confidence-level').value);
+  const cfg = CI_CONFIG[ci];
+  document.querySelectorAll('.ci-label').forEach(el => el.textContent = cfg.label);
+  document.getElementById('lower-label').textContent = `Lower bound (${cfg.lower} percentile)`;
+  document.getElementById('upper-label').textContent = `Upper bound (${cfg.upper} percentile)`;
+}
+
+// ===== UTILITY FUNCTIONS =====
+
+function parseInput(str) {
+  str = str.trim().toLowerCase().replace(/,/g, '');
+  // Handle scientific notation: 3.14e23, 1e25, etc.
+  if (/^-?[\d.]+e[+-]?\d+$/i.test(str)) {
+    return parseFloat(str);
+  }
+  // Handle suffixes: 1.5B, 300M, 2T, 50K
+  const suffixMatch = str.match(/^(-?[\d.]+)\s*([kmbt])$/i);
+  if (suffixMatch) {
+    const num = parseFloat(suffixMatch[1]);
+    const suffix = suffixMatch[2].toUpperCase();
+    const multipliers = { K: 1e3, M: 1e6, B: 1e9, T: 1e12 };
+    return num * multipliers[suffix];
+  }
+  // Handle dollar sign
+  str = str.replace(/^\$/, '');
+  return parseFloat(str);
+}
+
+function formatNumber(n, unit, short) {
+  if (unit === 'year') {
+    const yr = Math.floor(n);
+    const frac = n - yr;
+    const monthNames = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+    const monthIdx = Math.min(11, Math.floor(frac * 12));
+    return short ? n.toFixed(2) : `${monthNames[monthIdx]} ${yr} (${n.toFixed(2)})`;
+  }
+  if (unit === '%' || unit === 'percent' || unit === 'percent of total VC') {
+    return n.toFixed(1) + '%';
+  }
+  if (unit === 'days' || unit === 'x/year' || unit === 'x' || unit === 'models') {
+    return n.toFixed(1);
+  }
+  if (Math.abs(n) >= 1e15) return n.toExponential(2);
+  if (Math.abs(n) >= 1e12) return (n/1e12).toFixed(2) + 'T';
+  if (Math.abs(n) >= 1e9) return (n/1e9).toFixed(2) + 'B';
+  if (Math.abs(n) >= 1e6) return (n/1e6).toFixed(2) + 'M';
+  if (Math.abs(n) >= 1e3) return (n/1e3).toFixed(1) + 'K';
+  if (Number.isInteger(n)) return n.toString();
+  return n.toFixed(2);
+}
+
+function formatForDisplay(n, unit) {
+  if (unit === 'FLOP' || unit === 'parameters') return n.toExponential(2) + ' ' + unit;
+  if (unit === 'USD') return '$' + formatNumber(n, unit);
+  if (unit === 'year') return formatNumber(n, unit);
+  return formatNumber(n, unit) + (unit && unit !== '%' ? ' ' + unit : '');
+}
+
+// ===== SCORING ALGORITHM =====
+//
+// For each question, score is 0-100.
+//
+// We use a normalized interval score. The key idea:
+//   - Transform to a normalized space (log for log-scale, linear for linear-scale)
+//   - Compute interval width in that space
+//   - Score based on: (a) did the interval contain the true value? (b) how wide was it relative to a reference width?
+//
+// Specifically:
+//   - In normalized space, let w = width of player's interval, w_ref = a "reference width" for the question
+//   - If the true value is inside the interval (HIT):
+//       score = 100 * max(0, 1 - 0.5 * (w / w_ref))
+//     So a very tight interval that hits gets close to 100, and a very wide one gets close to 50.
+//     Minimum score for a hit = 15 (floor to reward capturing truth)
+//   - If the true value is outside the interval (MISS):
+//       Let d = distance from nearest interval edge to truth (in normalized space)
+//       penalty = min(1, d / w_ref) -- how badly you missed, relative to reference
+//       score = max(0, 25 * (1 - penalty) - 10 * (w / w_ref))
+//     So a near-miss with a tight interval can still get some points, but a far miss is 0.
+//
+// Reference widths (w_ref) by type:
+//   - Log-scale: 2 orders of magnitude (e.g., getting within 100x is "okay")
+//   - Linear years: 3 years
+//   - Linear percentages: 15 percentage points
+//   - Linear small numbers: varies per question
+
+function computeScore(question, lower, upper, confidenceLevel) {
+  const truth = question.answer;
+  const scale = question.scale;
+  const ciScale = CI_CONFIG[confidenceLevel || 90].wRefScale;
+
+  let tNorm, lNorm, uNorm, wRef;
+
+  if (scale === 'log') {
+    tNorm = Math.log10(truth);
+    lNorm = Math.log10(Math.max(lower, 1e-30));
+    uNorm = Math.log10(Math.max(upper, 1e-30));
+    wRef = 2.0; // 2 orders of magnitude reference width
+  } else {
+    tNorm = truth;
+    lNorm = lower;
+    uNorm = upper;
+    // Set reference width based on unit
+    if (question.unit === 'year') {
+      wRef = 3.0;
+    } else if (question.unit === '%' || question.unit === 'percent' || question.unit === 'percent of total VC') {
+      wRef = 15.0;
+    } else if (question.unit === 'days') {
+      wRef = 90;
+    } else if (question.unit === 'x/year' || question.unit === 'x') {
+      wRef = 5.0;
+    } else if (question.unit === 'models') {
+      wRef = 80;
+    } else {
+      wRef = Math.abs(truth) * 0.5 || 10;
+    }
+  }
+
+  // Scale reference width by confidence level
+  wRef *= ciScale;
+
+  const w = uNorm - lNorm;
+  const hit = (truth >= lower && truth <= upper);
+
+  let score;
+
+  if (hit) {
+    // Reward capturing the truth; bonus for narrower intervals
+    const widthRatio = w / wRef;
+    score = 100 * Math.max(0, 1 - 0.5 * widthRatio);
+    score = Math.max(score, 15); // Floor: you always get at least 15 for a hit
+  } else {
+    // Penalty based on distance of miss
+    let d;
+    if (scale === 'log') {
+      if (truth < lower) d = lNorm - tNorm;
+      else d = tNorm - uNorm;
+    } else {
+      if (truth < lower) d = lNorm - tNorm;
+      else d = tNorm - uNorm;
+    }
+
+    const missFrac = Math.min(1, d / wRef);
+    const widthPenalty = 10 * (w / wRef);
+    score = Math.max(0, 25 * (1 - missFrac) - widthPenalty);
+  }
+
+  return { score: Math.round(score * 10) / 10, hit, width: w, wRef };
+}
+
+// ===== GAME LOGIC =====
+
+function shuffleArray(arr) {
+  const a = [...arr];
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
+function startGame() {
+  const numQ = parseInt(document.getElementById('num-questions').value);
+  const catFilter = document.getElementById('category-filter').value;
+  gameState.confidenceLevel = parseInt(document.getElementById('confidence-level').value);
+
+  let pool = catFilter === 'all' ? [...ALL_QUESTIONS] : ALL_QUESTIONS.filter(q => q.category === catFilter);
+  pool = shuffleArray(pool);
+  gameState.questions = pool.slice(0, Math.min(numQ, pool.length));
+  gameState.currentIndex = 0;
+  gameState.results = [];
+  gameState.showingFeedback = false;
+
+  updateCIDisplay();
+  showScreen('game-screen');
+  renderQuestion();
+}
+
+function restartGame() {
+  // Restart with same settings
+  startGame();
+}
+
+function showStart() {
+  showScreen('start-screen');
+}
+
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  window.scrollTo(0, 0);
+}
+
+function renderQuestion() {
+  const q = gameState.questions[gameState.currentIndex];
+  const total = gameState.questions.length;
+  const idx = gameState.currentIndex;
+
+  document.getElementById('progress-bar').style.width = ((idx / total) * 100) + '%';
+  document.getElementById('question-number').textContent = `Question ${idx + 1} of ${total}`;
+  document.getElementById('category-badge').textContent = q.category;
+  document.getElementById('question-text').textContent = q.question;
+  // Hide year for date questions to avoid leaking the answer
+  const metaParts = [`Unit: ${q.unit}`];
+  if (q.category !== 'Release Dates') metaParts.push(`Year: ${q.year}`);
+  metaParts.push(`Source: ${q.source}`);
+  document.getElementById('question-meta').textContent = metaParts.join(' | ');
+
+  const scaleInd = document.getElementById('scale-indicator');
+  if (q.scale === 'log') {
+    scaleInd.className = 'scale-indicator scale-log';
+    scaleInd.textContent = 'LOG SCALE — use scientific notation (e.g. 1e23)';
+  } else {
+    scaleInd.className = 'scale-indicator scale-linear';
+    scaleInd.textContent = 'LINEAR SCALE — enter numbers directly';
+  }
+
+  // Input hints
+  const hint = document.getElementById('input-hint');
+  if (q.unit === 'FLOP' || q.unit === 'parameters') {
+    hint.textContent = 'Tip: Use scientific notation like 3e23 or 1.5e25. You can also use K, M, B, T suffixes.';
+  } else if (q.unit === 'USD') {
+    hint.textContent = 'Tip: Enter dollar amounts. Use suffixes like 4.6M, 3.7B, or scientific notation like 7.8e7.';
+  } else if (q.unit === 'year') {
+    hint.textContent = 'Tip: Use fractional years. Jan 1 = .00, Jul 1 = .50, Dec 31 = .99. E.g. 2023.25 = early April 2023.';
+  } else if (q.unit === '%' || q.unit === 'percent' || q.unit === 'percent of total VC') {
+    hint.textContent = 'Tip: Enter as a number, e.g. 86.4 for 86.4%.';
+  } else {
+    hint.textContent = '';
+  }
+
+  // Clear inputs
+  document.getElementById('lower-input').value = '';
+  document.getElementById('upper-input').value = '';
+  document.getElementById('lower-input').focus();
+
+  // Update running score
+  updateRunningScore();
+
+  // Hide feedback
+  document.getElementById('feedback-card').classList.remove('show');
+  document.getElementById('submit-btn').style.display = '';
+  gameState.showingFeedback = false;
+}
+
+function updateRunningScore() {
+  const el = document.getElementById('running-score');
+  if (gameState.results.length === 0) {
+    el.innerHTML = '';
+    return;
+  }
+  const avg = gameState.results.reduce((s, r) => s + r.score, 0) / gameState.results.length;
+  const hits = gameState.results.filter(r => r.hit).length;
+  el.innerHTML = `Running avg: <span>${avg.toFixed(1)}</span> | Hits: <span>${hits}/${gameState.results.length}</span>`;
+}
+
+function submitAnswer() {
+  if (gameState.showingFeedback) return;
+
+  const q = gameState.questions[gameState.currentIndex];
+  const lowerStr = document.getElementById('lower-input').value;
+  const upperStr = document.getElementById('upper-input').value;
+
+  const lower = parseInput(lowerStr);
+  const upper = parseInput(upperStr);
+
+  if (isNaN(lower) || isNaN(upper)) {
+    alert('Please enter valid numbers for both bounds.');
+    return;
+  }
+
+  if (lower > upper) {
+    alert('Lower bound must be less than or equal to upper bound.');
+    return;
+  }
+
+  if (q.scale === 'log' && (lower <= 0 || upper <= 0)) {
+    alert('For log-scale quantities, both bounds must be positive.');
+    return;
+  }
+
+  const result = computeScore(q, lower, upper, gameState.confidenceLevel);
+  result.lower = lower;
+  result.upper = upper;
+  result.question = q;
+
+  gameState.results.push(result);
+  gameState.showingFeedback = true;
+
+  showFeedback(result);
+}
+
+function showFeedback(result) {
+  const q = result.question;
+  const card = document.getElementById('feedback-card');
+  card.classList.add('show');
+  document.getElementById('submit-btn').style.display = 'none';
+
+  // Result header
+  const resultEl = document.getElementById('feedback-result');
+  if (result.hit) {
+    resultEl.innerHTML = `
+      <div class="feedback-icon hit">&#10003;</div>
+      <div class="feedback-text">
+        <h3 style="color:var(--green)">Hit! True value is in your interval</h3>
+        <p>Score: ${result.score.toFixed(1)} / 100</p>
+      </div>`;
+  } else {
+    resultEl.innerHTML = `
+      <div class="feedback-icon miss">&#10007;</div>
+      <div class="feedback-text">
+        <h3 style="color:var(--red)">Miss! True value is outside your interval</h3>
+        <p>Score: ${result.score.toFixed(1)} / 100</p>
+      </div>`;
+  }
+
+  // Details
+  const detailsEl = document.getElementById('feedback-details');
+  detailsEl.innerHTML = `
+    <div class="detail-box">
+      <div class="label">True Value</div>
+      <div class="value neutral">${formatForDisplay(q.answer, q.unit)}</div>
+    </div>
+    <div class="detail-box">
+      <div class="label">Your Interval</div>
+      <div class="value">${formatForDisplay(result.lower, q.unit)} &ndash; ${formatForDisplay(result.upper, q.unit)}</div>
+    </div>
+    <div class="detail-box">
+      <div class="label">Score</div>
+      <div class="value ${result.score >= 50 ? 'good' : result.score >= 20 ? 'neutral' : 'bad'}">${result.score.toFixed(1)}</div>
+    </div>`;
+
+  // Visual interval bar
+  renderIntervalVisual(result);
+
+  // Explanation
+  document.getElementById('feedback-explanation').innerHTML =
+    `<strong>Source:</strong> ${q.source}<br><strong>Details:</strong> ${q.explanation}`;
+
+  // Update button text
+  const isLast = gameState.currentIndex >= gameState.questions.length - 1;
+  document.getElementById('next-btn').textContent = isLast ? 'See Results' : 'Next Question';
+
+  updateRunningScore();
+
+  // Scroll to feedback
+  card.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+}
+
+function renderIntervalVisual(result) {
+  const container = document.getElementById('interval-visual');
+  const q = result.question;
+
+  // Determine the full range to display
+  let allVals, dispLower, dispUpper;
+  if (q.scale === 'log') {
+    const vals = [Math.log10(result.lower), Math.log10(result.upper), Math.log10(q.answer)];
+    const minV = Math.min(...vals) - 0.5;
+    const maxV = Math.max(...vals) + 0.5;
+    dispLower = minV;
+    dispUpper = maxV;
+  } else {
+    const vals = [result.lower, result.upper, q.answer];
+    const range = Math.max(...vals) - Math.min(...vals);
+    const pad = Math.max(range * 0.2, 0.1);
+    dispLower = Math.min(...vals) - pad;
+    dispUpper = Math.max(...vals) + pad;
+  }
+
+  const totalRange = dispUpper - dispLower;
+
+  function toPercent(val) {
+    let v = q.scale === 'log' ? Math.log10(val) : val;
+    return ((v - dispLower) / totalRange) * 100;
+  }
+
+  const barLeft = toPercent(result.lower);
+  const barRight = toPercent(result.upper);
+  const truthPos = toPercent(q.answer);
+
+  container.innerHTML = `
+    <div class="interval-bar-container">
+      <div class="interval-bar" style="left:${barLeft}%; width:${barRight - barLeft}%;"></div>
+      <div class="true-value-marker ${result.hit ? 'hit' : 'miss'}" style="left:${truthPos}%;"></div>
+    </div>
+    <div class="interval-labels">
+      <span>${q.scale === 'log' ? '10^' + dispLower.toFixed(1) : formatForDisplay(dispLower, q.unit)}</span>
+      <span style="color:${result.hit ? 'var(--green)' : 'var(--red)'}">&#9650; True: ${formatForDisplay(q.answer, q.unit)}</span>
+      <span>${q.scale === 'log' ? '10^' + dispUpper.toFixed(1) : formatForDisplay(dispUpper, q.unit)}</span>
+    </div>`;
+}
+
+function nextQuestion() {
+  gameState.currentIndex++;
+  if (gameState.currentIndex >= gameState.questions.length) {
+    showResults();
+  } else {
+    renderQuestion();
+  }
+}
+
+// ===== RESULTS =====
+
+function computeCalibrationScore(results, targetRate) {
+  // Pure calibration score: how close is the empirical hit rate to the target?
+  const n = results.length;
+  const hits = results.filter(r => r.hit).length;
+  const hitRate = hits / n;
+  const deviation = Math.abs(hitRate - targetRate);
+  // Quadratic penalty: small deviations are forgiven more
+  const calScore = 100 * Math.pow(Math.max(0, 1 - deviation / 0.5), 2);
+  return Math.round(calScore * 10) / 10;
+}
+
+function computeSharpnessScore(results) {
+  // Average per-question sharpness: how narrow were the intervals (among hits)?
+  // For each hit, sharpness = 100 * max(0, 1 - w/wRef). For misses, 0.
+  // Averaged over all questions.
+  const n = results.length;
+  let totalSharpness = 0;
+  for (const r of results) {
+    if (r.hit) {
+      totalSharpness += 100 * Math.max(0, 1 - r.width / r.wRef);
+    }
+  }
+  return Math.round((totalSharpness / n) * 10) / 10;
+}
+
+function showResults() {
+  showScreen('results-screen');
+
+  const results = gameState.results;
+  const n = results.length;
+  const avgScore = results.reduce((s, r) => s + r.score, 0) / n;
+  const hits = results.filter(r => r.hit).length;
+  const hitRate = (hits / n) * 100;
+  const T = gameState.confidenceLevel;
+  const targetRate = CI_CONFIG[T].target;
+  const calibrationScore = computeCalibrationScore(results, targetRate);
+  const sharpnessScore = computeSharpnessScore(results);
+
+  // Store for leaderboard
+  gameState.finalAvgScore = Math.round(avgScore * 10) / 10;
+  gameState.finalCalScore = calibrationScore;
+  gameState.finalSharpScore = sharpnessScore;
+  gameState.finalHitRate = hitRate;
+  gameState.scoreSaved = false;
+
+  // Final score color
+  const scoreEl = document.getElementById('final-score');
+  scoreEl.textContent = avgScore.toFixed(1);
+  if (avgScore >= 70) scoreEl.style.color = 'var(--green)';
+  else if (avgScore >= 40) scoreEl.style.color = 'var(--orange)';
+  else scoreEl.style.color = 'var(--red)';
+
+  // Hit rate callout — the key calibration diagnostic
+  const hitrateEl = document.getElementById('hitrate-callout');
+  const hrColor = (hitRate >= T - 10 && hitRate <= 100) ? 'var(--green)' : (hitRate >= T - 30 ? 'var(--orange)' : 'var(--red)');
+  let hrVerdict;
+  if (hitRate > T + 5) hrVerdict = 'Underconfident — your intervals are wider than they need to be.';
+  else if (hitRate >= T - 10) hrVerdict = `Well calibrated — close to the ${T}% target.`;
+  else if (hitRate >= T - 30) hrVerdict = 'Somewhat overconfident — try widening your intervals.';
+  else hrVerdict = 'Significantly overconfident — you need much wider intervals.';
+  hitrateEl.innerHTML = `
+    <div class="hitrate-value" style="color:${hrColor}">${hits}/${n} &nbsp;(${hitRate.toFixed(0)}%)</div>
+    <div class="hitrate-label">Intervals containing the true value (target: ${T}%)</div>
+    <div class="hitrate-detail">${hrVerdict}</div>`;
+
+  // Stats grid
+  const statsEl = document.getElementById('stats-grid');
+  const bestScore = Math.max(...results.map(r => r.score));
+  const worstScore = Math.min(...results.map(r => r.score));
+
+  // Median score
+  const sortedScores = results.map(r => r.score).sort((a, b) => a - b);
+  const medianScore = n % 2 === 1 ? sortedScores[Math.floor(n/2)] : (sortedScores[n/2 - 1] + sortedScores[n/2]) / 2;
+
+  statsEl.innerHTML = `
+    <div class="stat-card">
+      <div class="stat-value">${medianScore.toFixed(1)}</div>
+      <div class="stat-label">Median Score</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-value" style="color:var(--green)">${bestScore.toFixed(1)}</div>
+      <div class="stat-label">Best Question</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-value" style="color:var(--red)">${worstScore.toFixed(1)}</div>
+      <div class="stat-label">Worst Question</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-value">${n}</div>
+      <div class="stat-label">Questions Answered</div>
+    </div>`;
+
+  // Calibration analysis
+  renderCalibrationChart(results);
+
+  document.getElementById('calibration-description').textContent =
+    `Your ${T}% intervals should contain the true value ~${T}% of the time. The chart below shows your empirical coverage.`;
+
+  const calSummary = document.getElementById('calibration-summary');
+  if (hitRate > T + 5) {
+    calSummary.innerHTML = `<strong>Underconfident!</strong> Your hit rate of ${hitRate.toFixed(0)}% is above ${T}%. Your intervals are wider than they need to be. Try tightening them to improve precision without sacrificing too many hits.`;
+  } else if (hitRate >= T - 10) {
+    calSummary.innerHTML = `<strong>Well calibrated!</strong> Your hit rate of ${hitRate.toFixed(0)}% is close to the target ${T}%. Good job balancing precision and coverage.`;
+  } else if (hitRate >= T - 30) {
+    calSummary.innerHTML = `<strong>Somewhat overconfident.</strong> Your hit rate of ${hitRate.toFixed(0)}% is below the target ${T}%. Consider widening your intervals, especially for questions where you're less certain.`;
+  } else {
+    calSummary.innerHTML = `<strong>Significantly overconfident.</strong> Your hit rate of ${hitRate.toFixed(0)}% is well below ${T}%. You should be giving much wider intervals for things you're uncertain about.`;
+  }
+
+  // Question history
+  renderHistory(results);
+
+  // Leaderboard
+  renderLeaderboard('results');
+  document.getElementById('save-score-btn').disabled = false;
+  document.getElementById('save-score-btn').textContent = 'Save Score';
+}
+
+function renderCalibrationChart(results) {
+  const canvas = document.getElementById('calibration-canvas');
+  const ctx = canvas.getContext('2d');
+  const rect = canvas.parentElement.getBoundingClientRect();
+  canvas.width = rect.width * 2;
+  canvas.height = 240 * 2;
+  canvas.style.width = rect.width + 'px';
+  canvas.style.height = '240px';
+  ctx.scale(2, 2);
+
+  const W = rect.width;
+  const H = 240;
+  const pad = { top: 20, right: 20, bottom: 60, left: 50 };
+  const chartW = W - pad.left - pad.right;
+  const chartH = H - pad.top - pad.bottom;
+
+  // Background
+  ctx.fillStyle = 'transparent';
+  ctx.fillRect(0, 0, W, H);
+
+  // Calculate cumulative calibration by category
+  const categories = [...new Set(results.map(r => r.question.category))];
+  const catStats = categories.map(cat => {
+    const catResults = results.filter(r => r.question.category === cat);
+    const catHits = catResults.filter(r => r.hit).length;
+    return { category: cat, hitRate: catHits / catResults.length, n: catResults.length };
+  });
+
+  // Draw axes
+  ctx.strokeStyle = '#2e3144';
+  ctx.lineWidth = 1;
+  ctx.beginPath();
+  ctx.moveTo(pad.left, pad.top);
+  ctx.lineTo(pad.left, H - pad.bottom);
+  ctx.lineTo(W - pad.right, H - pad.bottom);
+  ctx.stroke();
+
+  // Y-axis labels
+  ctx.fillStyle = '#8b8fa3';
+  ctx.font = '11px Inter, system-ui';
+  ctx.textAlign = 'right';
+  for (let i = 0; i <= 100; i += 25) {
+    const y = pad.top + chartH * (1 - i / 100);
+    ctx.fillText(i + '%', pad.left - 8, y + 4);
+    ctx.strokeStyle = '#1a1d27';
+    ctx.beginPath();
+    ctx.moveTo(pad.left, y);
+    ctx.lineTo(W - pad.right, y);
+    ctx.stroke();
+  }
+
+  // Draw target line
+  const targetRate = CI_CONFIG[gameState.confidenceLevel].target;
+  const targetY = pad.top + chartH * (1 - targetRate);
+  ctx.strokeStyle = 'rgba(108, 126, 225, 0.5)';
+  ctx.setLineDash([4, 4]);
+  ctx.beginPath();
+  ctx.moveTo(pad.left, targetY);
+  ctx.lineTo(W - pad.right, targetY);
+  ctx.stroke();
+  ctx.setLineDash([]);
+  ctx.fillStyle = '#6c7ee1';
+  ctx.textAlign = 'left';
+  ctx.fillText(`${gameState.confidenceLevel}% target`, W - pad.right - 70, targetY - 5);
+
+  // Draw bars for each category
+  const barW = Math.min(60, (chartW / catStats.length) - 10);
+  catStats.forEach((cat, i) => {
+    const x = pad.left + (i + 0.5) * (chartW / catStats.length) - barW / 2;
+    const barH = cat.hitRate * chartH;
+    const y = pad.top + chartH - barH;
+
+    // Bar color based on calibration quality
+    const diff = Math.abs(cat.hitRate - targetRate);
+    let color;
+    if (diff <= 0.1) color = 'rgba(74, 222, 128, 0.6)';
+    else if (diff <= 0.2) color = 'rgba(251, 191, 36, 0.6)';
+    else color = 'rgba(248, 113, 113, 0.6)';
+
+    ctx.fillStyle = color;
+    ctx.fillRect(x, y, barW, barH);
+
+    // Border
+    ctx.strokeStyle = color.replace('0.6', '1');
+    ctx.lineWidth = 1;
+    ctx.strokeRect(x, y, barW, barH);
+
+    // Value on top
+    ctx.fillStyle = '#e1e4ed';
+    ctx.font = 'bold 11px Inter, system-ui';
+    ctx.textAlign = 'center';
+    ctx.fillText((cat.hitRate * 100).toFixed(0) + '%', x + barW / 2, y - 5);
+
+    // Category label - use abbreviations for long names
+    const categoryAbbrev = {
+      'Training Compute': 'Compute',
+      'Release Dates': 'Dates',
+      'Company Financials': 'Financials',
+      'AI Chip Market': 'Chips',
+      'Training Costs': 'Costs',
+      'Trends': 'Trends'
+    };
+    ctx.fillStyle = '#8b8fa3';
+    ctx.font = '10px Inter, system-ui';
+    ctx.save();
+    ctx.translate(x + barW / 2, H - pad.bottom + 10);
+    ctx.rotate(-Math.PI / 7);
+    ctx.textAlign = 'right';
+    const shortName = categoryAbbrev[cat.category] || cat.category;
+    ctx.fillText(shortName + ` (${cat.n})`, 0, 0);
+    ctx.restore();
+  });
+
+  // Also draw overall bar
+  const totalHits = results.filter(r => r.hit).length;
+  const overallRate = totalHits / results.length;
+  ctx.fillStyle = '#e1e4ed';
+  ctx.font = '11px Inter, system-ui';
+  ctx.textAlign = 'left';
+  ctx.fillText(`Overall: ${(overallRate * 100).toFixed(0)}% (${totalHits}/${results.length})`, pad.left + 5, pad.top + 12);
+}
+
+function renderHistory(results) {
+  const listEl = document.getElementById('history-list');
+  listEl.innerHTML = results.map((r, i) => {
+    const q = r.question;
+    return `
+      <div class="history-item">
+        <div class="history-indicator ${r.hit ? 'hit' : 'miss'}">${r.hit ? '&#10003;' : '&#10007;'}</div>
+        <div class="history-content">
+          <div class="history-question">${q.question}</div>
+          <div class="history-details">
+            True: ${formatForDisplay(q.answer, q.unit)} | Your interval: ${formatForDisplay(r.lower, q.unit)} &ndash; ${formatForDisplay(r.upper, q.unit)}
+          </div>
+        </div>
+        <div class="history-score" style="color:${r.score >= 50 ? 'var(--green)' : r.score >= 20 ? 'var(--orange)' : 'var(--red)'}">${r.score.toFixed(1)}</div>
+      </div>`;
+  }).join('');
+}
+
+// ===== LEADERBOARD =====
+
+function getLeaderboard() {
+  try {
+    const data = localStorage.getItem('ai_calibration_leaderboard');
+    return data ? JSON.parse(data) : [];
+  } catch (e) {
+    return [];
+  }
+}
+
+function saveLeaderboard(entries) {
+  localStorage.setItem('ai_calibration_leaderboard', JSON.stringify(entries));
+}
+
+function saveScore() {
+  if (gameState.scoreSaved) return;
+
+  const nameInput = document.getElementById('player-name');
+  const name = nameInput.value.trim() || 'Anonymous';
+
+  const entry = {
+    name,
+    overallScore: gameState.finalAvgScore,
+    calibrationScore: gameState.finalCalScore,
+    sharpnessScore: gameState.finalSharpScore,
+    hitRate: Math.round(gameState.finalHitRate),
+    numQuestions: gameState.questions.length,
+    category: document.getElementById('category-filter').value,
+    confidenceLevel: gameState.confidenceLevel,
+    date: new Date().toISOString().slice(0, 10),
+    timestamp: Date.now()
+  };
+
+  const lb = getLeaderboard();
+  lb.push(entry);
+  // Sort by overall score descending
+  lb.sort((a, b) => b.overallScore - a.overallScore);
+  // Keep top 50
+  if (lb.length > 50) lb.length = 50;
+  saveLeaderboard(lb);
+
+  gameState.scoreSaved = true;
+  document.getElementById('save-score-btn').disabled = true;
+  document.getElementById('save-score-btn').textContent = 'Saved!';
+
+  renderLeaderboard('results');
+}
+
+function clearLeaderboard() {
+  if (confirm('Clear all leaderboard entries? This cannot be undone.')) {
+    localStorage.removeItem('ai_calibration_leaderboard');
+    renderLeaderboard('results');
+    renderLeaderboard('start');
+  }
+}
+
+function renderLeaderboard(location) {
+  const lb = getLeaderboard();
+  const bodyId = location === 'start' ? 'start-leaderboard-body' : 'leaderboard-body';
+  const bodyEl = document.getElementById(bodyId);
+  if (!bodyEl) return;
+
+  if (lb.length === 0) {
+    bodyEl.innerHTML = `<div class="leaderboard-empty">No scores yet. Play a game to get on the board!</div>`;
+    return;
+  }
+
+  // Find current game entry (most recent with matching timestamp, if just saved)
+  const currentTimestamp = gameState.scoreSaved ? lb.find(e =>
+    e.overallScore === gameState.finalAvgScore &&
+    e.numQuestions === gameState.questions.length
+  )?.timestamp : null;
+
+  let html = `<table class="leaderboard-table">
+    <thead>
+      <tr>
+        <th>#</th>
+        <th>Name</th>
+        <th>Score</th>
+        <th>Hit Rate</th>
+        <th>CI</th>
+        <th>Qs</th>
+        <th>Date</th>
+      </tr>
+    </thead>
+    <tbody>`;
+
+  const displayEntries = location === 'start' ? lb.slice(0, 10) : lb.slice(0, 20);
+
+  displayEntries.forEach((entry, i) => {
+    const rank = i + 1;
+    const rankClass = rank === 1 ? 'gold' : rank === 2 ? 'silver' : rank === 3 ? 'bronze' : '';
+    const isCurrent = entry.timestamp === currentTimestamp;
+    const rowClass = isCurrent ? 'current-game' : '';
+
+    const overallColor = entry.overallScore >= 70 ? 'var(--green)' : entry.overallScore >= 40 ? 'var(--orange)' : 'var(--red)';
+    const entryCi = entry.confidenceLevel || 90;
+    const hrColor = (entry.hitRate >= entryCi - 10 && entry.hitRate <= 100) ? 'var(--green)' : (entry.hitRate >= entryCi - 30 ? 'var(--orange)' : 'var(--red)');
+
+    html += `
+      <tr class="${rowClass}">
+        <td class="leaderboard-rank ${rankClass}">${rank}</td>
+        <td class="leaderboard-name">${escapeHtml(entry.name)}${isCurrent ? ' *' : ''}</td>
+        <td class="leaderboard-score" style="color:${overallColor}">${entry.overallScore.toFixed(1)}</td>
+        <td style="color:${hrColor}">${entry.hitRate}%</td>
+        <td>${entryCi}%</td>
+        <td>${entry.numQuestions}</td>
+        <td style="color:var(--text-dim)">${entry.date}</td>
+      </tr>`;
+  });
+
+  html += `</tbody></table>`;
+  if (lb.length > displayEntries.length) {
+    html += `<div style="text-align:center; padding:8px; color:var(--text-dim); font-size:12px;">Showing top ${displayEntries.length} of ${lb.length} entries</div>`;
+  }
+
+  bodyEl.innerHTML = html;
+}
+
+function escapeHtml(str) {
+  const div = document.createElement('div');
+  div.textContent = str;
+  return div.innerHTML;
+}
+
+// Render start-screen leaderboard on page load
+document.addEventListener('DOMContentLoaded', () => {
+  renderLeaderboard('start');
+});
+
+// ===== KEYBOARD SHORTCUTS =====
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Enter') {
+    if (gameState.showingFeedback) {
+      nextQuestion();
+    } else if (document.getElementById('game-screen').classList.contains('active')) {
+      submitAnswer();
+    }
+  }
+});
+</script>
+
+</body>
+</html>
